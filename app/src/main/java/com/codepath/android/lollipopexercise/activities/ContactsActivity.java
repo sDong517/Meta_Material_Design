@@ -3,14 +3,17 @@ package com.codepath.android.lollipopexercise.activities;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.codepath.android.lollipopexercise.R;
 import com.codepath.android.lollipopexercise.adapters.ContactsAdapter;
 import com.codepath.android.lollipopexercise.models.Contact;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -19,14 +22,17 @@ public class ContactsActivity extends AppCompatActivity {
     private RecyclerView rvContacts;
     private ContactsAdapter mAdapter;
     private List<Contact> contacts;
+    private CoordinatorLayout clMainContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
+
         // Find RecyclerView and bind to adapter
         rvContacts = (RecyclerView) findViewById(R.id.rvContacts);
+        clMainContent = (CoordinatorLayout) findViewById(R.id.clMainContent);
 
         // allows for optimizations
         rvContacts.setHasFixedSize(true);
@@ -62,6 +68,17 @@ public class ContactsActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        onComposeAction(item);
+
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onComposeAction(MenuItem item) {
+        Snackbar.make(clMainContent, "Updated on the bottom!", Snackbar.LENGTH_LONG).show();
+
+        Contact randomContact = Contact.getRandomContact(this);
+        contacts.add(randomContact);
+
+        mAdapter.notifyDataSetChanged();
     }
 }

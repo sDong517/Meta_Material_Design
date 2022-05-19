@@ -2,16 +2,25 @@ package com.codepath.android.lollipopexercise.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.codepath.android.lollipopexercise.R;
+import com.codepath.android.lollipopexercise.activities.DetailsActivity;
 import com.codepath.android.lollipopexercise.models.Contact;
 
 import java.util.List;
@@ -38,11 +47,36 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.VH> {
 
     // Display data at the specified position
     @Override
-    public void onBindViewHolder(VH holder, int position) {
+    public void onBindViewHolder(final VH holder, int position) {
         Contact contact = mContacts.get(position);
         holder.rootView.setTag(contact);
         holder.tvName.setText(contact.getName());
-        Glide.with(mContext).load(contact.getThumbnailDrawable()).centerCrop().into(holder.ivProfile);
+
+
+        // Use Glide to get a callback with a Bitmap which can then
+        // be used to extract a vibrant color from the Palette.
+
+        // Define an asynchronous listener for image loading
+        CustomTarget<Bitmap> target = new CustomTarget<Bitmap>(){
+            @Override
+            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                Glide.with(mContext).asBitmap().load(resource).into(holder.ivProfile);
+                Palette palette = Palette.from(resource).generate();
+                Palette.Swatch vibrant = palette.getVibrantSwatch();
+
+                if (vibrant != null){
+                    holder.vPalette.setBackgroundColor(vibrant.getRgb());
+                    holder.tvName.setTextColor(vibrant.getTitleTextColor());
+                }
+            }
+
+            @Override
+            public void onLoadCleared(@Nullable Drawable placeholder) {
+                //empty for now
+            }
+        };
+
+        Glide.with(mContext).asBitmap().load(contact.getThumbnailDrawable()).centerCrop().into(target);
     }
 
     @Override
@@ -72,6 +106,9 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.VH> {
                     if (contact != null) {
                         // Fire an intent when a contact is selected
                         // Pass contact object in the bundle and populate details activity.
+                        Intent intent = new Intent(mContext, DetailsActivity.class);
+                        intent.putExtra(DetailsActivity.EXTRA_CONTACT, contact);
+                        mContext.startActivity(intent);
                     }
                 }
             });
