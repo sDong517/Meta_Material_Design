@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.util.Pair;
 import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -108,7 +110,14 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.VH> {
                         // Pass contact object in the bundle and populate details activity.
                         Intent intent = new Intent(mContext, DetailsActivity.class);
                         intent.putExtra(DetailsActivity.EXTRA_CONTACT, contact);
-                        mContext.startActivity(intent);
+
+                        Pair<View, String> p1 = Pair.create((View)ivProfile, "profile");
+                        Pair<View, String> p2 = Pair.create(vPalette, "palette");
+                        Pair<View, String> p3 = Pair.create((View)tvName, "name");
+                        ActivityOptionsCompat options = ActivityOptionsCompat
+                                .makeSceneTransitionAnimation(mContext, p1, p2, p3);
+
+                        mContext.startActivity(intent, options.toBundle());
                     }
                 }
             });
