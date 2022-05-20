@@ -1,10 +1,14 @@
 package com.codepath.android.lollipopexercise.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.transition.Transition;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +27,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView tvPhone;
     private View vPalette;
     private FloatingActionButton fab;
+    private Transition.TransitionListener mEnterTransitionListener;
 
 
     @Override
@@ -53,6 +58,35 @@ public class DetailsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        mEnterTransitionListener = new android.transition.Transition.TransitionListener() {
+
+            @Override
+            public void onTransitionStart(android.transition.Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionEnd(android.transition.Transition transition) {
+                enterReveal();
+            }
+
+            @Override
+            public void onTransitionCancel(android.transition.Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(android.transition.Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(android.transition.Transition transition) {
+
+            }
+        };
+        getWindow().getEnterTransition().addListener(mEnterTransitionListener);
     }
 
     @Override
@@ -60,9 +94,85 @@ public class DetailsActivity extends AppCompatActivity {
 
         switch(item.getItemId()) {
             case android.R.id.home:
+                exitReveal();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed(){
+        exitReveal();
+    }
+
+    void enterReveal() {
+        // previously invisible view
+
+        // get the center for the clipping circle
+        int cx = fab.getMeasuredWidth() / 2;
+        int cy = fab.getMeasuredHeight() / 2;
+
+        // get the final radius for the clipping circle
+        int finalRadius = Math.max(fab.getWidth(), fab.getHeight()) / 2;
+
+        // create the animator for this view (the start radius is zero)
+        Animator anim =
+                ViewAnimationUtils.createCircularReveal(fab, cx, cy, 0, finalRadius);
+
+        // make the view visible and start the animation
+        fab.setVisibility(View.VISIBLE);
+
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                getWindow().getEnterTransition().removeListener(mEnterTransitionListener);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
+
+        anim.start();
+    }
+
+    void exitReveal() {
+
+        // get the center for the clipping circle
+        int cx = fab.getMeasuredWidth() / 2;
+        int cy = fab.getMeasuredHeight() / 2;
+
+        // get the initial radius for the clipping circle
+        int initialRadius = fab.getWidth() / 2;
+
+        // create the animation (the final radius is zero)
+        Animator anim =
+                ViewAnimationUtils.createCircularReveal(fab, cx, cy, initialRadius, 0);
+
+        // make the view invisible when the animation is done
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                fab.setVisibility(View.INVISIBLE);
+
+                supportFinishAfterTransition();
+            }
+        });
+
+        // start the animation
+        anim.start();
     }
 
 }
